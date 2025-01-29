@@ -1,0 +1,39 @@
+---
+title: "Quarto Basics"
+format:
+  html:
+    code-fold: true
+jupyter: python3
+---
+
+# Homework 1 Analysis
+
+### Step 1: Importing the data 
+First we import the necessary python packages.
+`Pandas` is a commonly used Python package for managing data, `os` will be used for saving files to their respective folders, and `tabulate` will be used for creating tables in terminal to confirm our work.
+
+Once the packages are installed we turn the .csv files into dataframes:
+
+`enrollment_df = pd.read_csv(enrollment_file_path)`
+
+`contract_df = pd.read_csv(contract_file_path, encoding='latin1')`
+
+### Step 2: Merging and Cleaning the data
+Once that is finished, an inner merge is conducted on Contract Number/Contract ID and Plan ID:
+
+```python
+merged_df = enrollment_df.merge(
+    contract_df,
+    left_on=["Contract_Number", "Plan_ID"],
+    right_on=["Contract_ID", "Plan_ID"],
+    how="inner"
+)
+```
+
+After the datasets are merged, redundant columns are dropped and the result is saved to the `output` sub-folder in the `data` folder.
+
+### Step 3: Questions and Tables
+
+Now that the dataset is prepared, the assigned questions can be answered and necessary tables can be created.
+
+#### 1. 
