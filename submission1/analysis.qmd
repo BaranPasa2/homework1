@@ -1,8 +1,9 @@
 ---
-title: "Quarto Basics"
+title: "pasa-b-hw1-1"
 format:
-  html:
+  pdf:
     code-fold: true
+    highlight-style: github
 jupyter: python3
 ---
 
