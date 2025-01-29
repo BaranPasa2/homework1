@@ -48,9 +48,12 @@ avg_enrollment_by_type.columns = ['Plan_Type', 'Average_Enrollment']
 
 # Save results directly to the "output" folder
 output_folder = "data/output"
-plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Original.csv"), index=False)
-filtered_plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Filtered.csv"), index=False)
-avg_enrollment_by_type.to_csv(os.path.join(output_folder, "Average_Enrollment_by_Type.csv"), index=False)
+
+# The following lines are commented out so that files are not repeatedly createed/added to the Output folder.
+
+# plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Original.csv"), index=False)
+# filtered_plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Filtered.csv"), index=False)
+# avg_enrollment_by_type.to_csv(os.path.join(output_folder, "Average_Enrollment_by_Type.csv"), index=False)
 
 print(f"Results saved to the '{output_folder}' folder.")
 

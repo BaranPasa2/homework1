@@ -20,7 +20,6 @@ Once the packages are installed we turn the .csv files into dataframes:
 
 ### Step 2: Merging and Cleaning the data
 Once that is finished, an inner merge is conducted on Contract Number/Contract ID and Plan ID:
-
 ```python
 merged_df = enrollment_df.merge(
     contract_df,
@@ -33,7 +32,17 @@ merged_df = enrollment_df.merge(
 After the datasets are merged, redundant columns are dropped and the result is saved to the `output` sub-folder in the `data` folder.
 
 ### Step 3: Questions and Tables
+##### Now that the dataset is prepared, the assigned questions can be answered and necessary tables can be created.
 
-Now that the dataset is prepared, the assigned questions can be answered and necessary tables can be created.
+#### 1. Counting Plans by Type
+To create this column, the dataframe is filtered to reflect `Plan_Type` and the pandas command `.value_counts()` is appended.
 
-#### 1. 
+#### 2. Excluding Unnecessary columns
+In order to exclude SNP, EGHP, and 800 series plans, another dataframe is created exluding these columns. This methods<br> ensure that the data is not lost in case it is required later.
+The table is then regenerated to reflect the redction in `Plan_Types`
+
+#### 3. Average Enrollment by Type
+A table displaying average enrollment by type is created. <br> A new dataframe is created with the columns `Plan_Type` and `Average_Enrollment`.
+The average enrollment column is created by averaging the enrollment by plan type.
+
+Lastly, new csv files are created and added to the output folder.
