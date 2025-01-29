@@ -1,25 +1,57 @@
 import pandas as pd
 import os
 from tabulate import tabulate
+import numpy as np
 
-# Load the datasets
-enrollment_dataFrame = pd.read_csv("data/input/CPSC_Enrollment_Info_2015_01.csv")
-serviceArea_dataFrame = pd.read_csv("data/input/MA_Cnty_SA_2015_01.csv")
-contract_dataFrame = pd.read_csv("data/input/CPSC_Contract_Info_2015_01.csv", encoding='latin1')
+# Load the datasets -> NEED TO SET THE DATATYPE FOR EACH ONE. MAKE EVERYTHING A DOUBLE/FLOAT
+
+enrollment_dataFrame = pd.read_csv("data/input/CPSC_Enrollment_Info_2015_01.csv", names= [
+            "Contract Number", "Plan ID", "SSA State County Code", "FIPS State County Code",
+            "State", "County", "Enrollment"
+        ], 
+        dtype= 
+            {
+            "Contract Number": object, "Plan ID": np.float64, "SSA State County Code": np.float64, "FIPS State County Code": np.float64,
+            "State": object, "County": object, "Enrollment": object
+            })
+
+serviceArea_dataFrame = pd.read_csv("data/input/MA_Cnty_SA_2015_01.csv", names=[
+            "Contract ID", "Plan ID", "Organization Type", "Plan Type", "Offers Part D", "SNP Plan", "EGHP",
+            "Organization Name", "Organization Marketing Name", "Plan Name", "Parent Organization", "Contract Effective Date"
+        ],
+        dtype={
+            "Contract ID": object, "Plan ID": np.float64, "Organization Type": object, "Plan Type": object, "Offers Part D": object, 
+            "SNP Plan": object, "EGHP": object, "Organization Name": object
+            })
+
+contract_dataFrame = pd.read_csv("data/input/CPSC_Contract_Info_2015_01.csv", encoding='latin1', names= [
+    "Contract ID", "Organization Name", "Organization Type", "Plan Type", "Partial", "EGHP", "SSA", "FIPS", "County", "State", "Notes"
+        ],
+        dtype= {
+            "Contract ID": object, "Organization Name": object, "Organization Type": object, "Plan Type": object, 
+            "Partial": object, "EGHP": object, "SSA": np.float64, "FIPS": np.float64, "County": object, "State": object, 
+            "Notes": object}
+        )
 
 # Standardize column names
 enrollment_dataFrame.columns = enrollment_dataFrame.columns.str.strip().str.replace(" ", "_")
 contract_dataFrame.columns = contract_dataFrame.columns.str.strip().str.replace(" ", "_")
-serviceArea_dataFrame.columns = contract_dataFrame.columns.str.strip().str.replace(" ", "_")
-
+serviceArea_dataFrame.columns = serviceArea_dataFrame.columns.str.strip().str.replace(" ", "_")
 
 # Perform an inner merge on Contract Number/Contract ID and Plan ID
 combined_dataFrame = enrollment_dataFrame.merge(
-    contract_dataFrame, serviceArea_dataFrame,
-    left_on=["Contract_Number", "Plan_ID"],
-    right_on=["Contract_ID", "Plan_ID"],
+    contract_dataFrame, 
+    left_on=["Contract_Number", "Plan_ID", "SSA_State_County_Code", "FIPS_State_County_Code"],
+    right_on=["Contract_ID", "Plan_ID", "SSA", "FIPS"],
     how="inner"
     )
+
+combined_dataFrame = combined_dataFrame.merge(
+    serviceArea_dataFrame,
+     left_on=["Contract_Number", "Plan_ID"], # there is no plan ID
+    right_on=["Contract_ID", "Plan_ID"],
+    how="inner"
+)
 
 # Dropping redundant columns
 combined_dataFrame.drop(columns=["Contract_ID"], inplace=True)
@@ -51,9 +83,9 @@ output_folder = "data/output"
 
 # The following lines are commented out so that files are not repeatedly createed/added to the Output folder.
 
-plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Original.csv"), index=False)
-filtered_plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Filtered.csv"), index=False)
-avg_enrollment_type.to_csv(os.path.join(output_folder, "Average_Enrollment_by_Type.csv"), index=False)
+#plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Original.csv"), index=False)
+#filtered_plan_count_by_type.to_csv(os.path.join(output_folder, "Plan_Count_by_Type_Filtered.csv"), index=False)
+#avg_enrollment_type.to_csv(os.path.join(output_folder, "Average_Enrollment_by_Type.csv"), index=False)
 
 print(f"Results saved to the '{output_folder}' folder.")
 
