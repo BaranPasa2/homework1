@@ -46,6 +46,7 @@ combined_dataFrame = enrollment_dataFrame.merge(
     how="inner"
     )
 
+# Do the inner merge after the first row. 
 combined_dataFrame = combined_dataFrame.merge(
     serviceArea_dataFrame,
      left_on=["Contract_Number", "Plan_ID"], # there is no plan ID
