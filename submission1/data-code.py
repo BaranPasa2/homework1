@@ -6,7 +6,6 @@ from tabulate import tabulate
 enrollment_dataFrame = pd.read_csv("data/input/CPSC_Enrollment_Info_2015_01.csv")
 serviceArea_dataFrame = pd.read_csv("data/input/MA_Cnty_SA_2015_01.csv")
 contract_dataFrame = pd.read_csv("data/input/CPSC_Contract_Info_2015_01.csv", encoding='latin1')
-print(serviceArea_dataFrame.info())
 
 # Standardize column names
 enrollment_dataFrame.columns = enrollment_dataFrame.columns.str.strip().str.replace(" ", "_")
@@ -16,7 +15,7 @@ serviceArea_dataFrame.columns = contract_dataFrame.columns.str.strip().str.repla
 
 # Perform an inner merge on Contract Number/Contract ID and Plan ID
 combined_dataFrame = enrollment_dataFrame.merge(
-    enrollment_dataFrame, serviceArea_dataFrame,
+    contract_dataFrame, serviceArea_dataFrame,
     left_on=["Contract_Number", "Plan_ID"],
     right_on=["Contract_ID", "Plan_ID"],
     how="inner"

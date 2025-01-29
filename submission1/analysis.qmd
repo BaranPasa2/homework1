@@ -1,5 +1,7 @@
 ---
 title: "pasa-b-hw1-1"
+execute:
+  echo: false
 format:
   pdf:
     code-fold: true
@@ -33,18 +35,79 @@ merged_df = enrollment_df.merge(
 
 After the datasets are merged, redundant columns are dropped and the result is saved to the `output` sub-folder in the `data` folder.
 
+```{python}
+import pandas as pd
+import os
+from tabulate import tabulate
+
+enrollment_dataFrame = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/input/CPSC_Enrollment_Info_2015_01.csv")
+
+# AM ABLE TO DO IT WITHOUT THE SERVICE AREA -> ASK IN CLASS HOW PEOPLE DID IT
+serviceArea_dataFrame = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/input/MA_Cnty_SA_2015_01.csv")
+
+contract_dataFrame = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/input/CPSC_Contract_Info_2015_01.csv", encoding='latin1')
+
+enrollment_dataFrame.columns = enrollment_dataFrame.columns.str.strip().str.replace(" ", "_")
+contract_dataFrame.columns = contract_dataFrame.columns.str.strip().str.replace(" ", "_")
+# serviceArea_dataFrame.columns = contract_dataFrame.columns.str.strip().str.replace(" ", "_") UNCOMMENT OUT ONCE FIXED
+
+
+combined_dataFrame = enrollment_dataFrame.merge(
+    contract_dataFrame, 
+    left_on=["Contract_Number", "Plan_ID"],
+    right_on=["Contract_ID", "Plan_ID"],
+    how="inner"
+    )     # REMEMBER TO INCLUDE SAERVICE AREA
+
+combined_dataFrame.drop(columns=["Contract_ID"], inplace=True)
+
+combined_dataFrame.to_csv("Merged_Enrollment_Data_2015.csv", index=False)
+
+# 1. Count of plans by type
+plan_count_by_type = combined_dataFrame['Plan_Type'].value_counts().reset_index()
+plan_count_by_type.columns = ['Plan_Type', 'Count']
+
+# 2. Excluding SNP, EGHP, and "800-series" plans
+excludedPlans_dataFrame = combined_dataFrame[
+    (combined_dataFrame['SNP_Plan'] == 'No') &
+    (combined_dataFrame['EGHP'] == 'No') &
+    (~combined_dataFrame['Plan_ID'].astype(str).str.startswith("800"))
+]
+
+filtered_plan_count_by_type = excludedPlans_dataFrame['Plan_Type'].value_counts().reset_index()
+filtered_plan_count_by_type.columns = ['Plan_Type', 'Count']
+
+# 3. Average enrollment by type
+excludedPlans_dataFrame['Enrollment'] = pd.to_numeric(excludedPlans_dataFrame['Enrollment'], errors='coerce')
+avg_enrollment_type = excludedPlans_dataFrame.groupby('Plan_Type')['Enrollment'].mean().reset_index()
+avg_enrollment_type.columns = ['Plan_Type', 'Average_Enrollment']
+```
+
+
 ### Step 3: Questions and Tables
 ##### Now that the dataset is prepared, the assigned questions can be answered and necessary tables can be created.
 
 #### 1. Counting Plans by Type
 To create this column, the dataframe is filtered to reflect `Plan_Type` and the pandas command `.value_counts()` is appended.
+```{python}
+print("\nPlan Count by Type (Original):")
+print(tabulate(plan_count_by_type, headers='keys', tablefmt='pretty'))
+```
 
 #### 2. Excluding Unnecessary columns
 In order to exclude SNP, EGHP, and 800 series plans, another dataframe is created exluding these columns. This methods<br> ensure that the data is not lost in case it is required later.
 The table is then regenerated to reflect the redction in `Plan_Types`
+```{python}
+print("\nPlan Count by Type (Filtered):")
+print(tabulate(filtered_plan_count_by_type, headers='keys', tablefmt='pretty'))
+```
 
 #### 3. Average Enrollment by Type
 A table displaying average enrollment by type is created. <br> A new dataframe is created with the columns `Plan_Type` and `Average_Enrollment`.
 The average enrollment column is created by averaging the enrollment by plan type.
+```{python}
+print("\nAverage Enrollment by Type:")
+print(tabulate(avg_enrollment_type, headers='keys', tablefmt='pretty'))
+```
 
 Lastly, new csv files are created and added to the output folder.
