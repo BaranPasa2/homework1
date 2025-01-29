@@ -15,4 +15,4 @@ foreach(println, names(altEnrollmentData))
 #foreach(println, names(altServAreaData))
 
 # merging the datasets:
-innerjoin(altContractData, altEnrollmentData, on=:["Contract ID" => "Contract Number", :"Plan ID"], matchmissing=:notequal)
+leftjoin(altContractData, altEnrollmentData, on=:["Contract ID" => "Contract Number", :"Plan ID"], matchmissing=:notequal)
