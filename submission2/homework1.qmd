@@ -1,0 +1,117 @@
+---
+title: "Homework 1"
+subtitle: "ECON 470"
+author: "Baran Pasa"
+execute:
+  echo: false
+format:
+  pdf:
+    output-file: "pasa-b-hwk1-2"
+    output-exit: "pdf"
+    code-fold: true
+    highlight-style: github
+    include-in-header:
+      text: |
+        \addtokomafont{disposition}{\rmfamily}
+
+jupyter: python3
+
+---
+
+Below are my answers to the questions. After class, I shifted from doing everything in one file to multiple files.\ \
+Here is a [link to my github repository](https://github.com/BaranPasa2/homework1/tree/main/submission2).\ There is also a folder in submission 2 for my attempt to write the code in Julia but it is incomplete.
+```{python}
+import pandas as pd
+
+contractData = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/input/CPSC_Contract_Info_2015_01.csv", encoding='latin1', skiprows=1, names=[
+        "contractid", "planid", "org_type", "plan_type", "partd", "snp", "eghp", "org_name",
+        "org_marketing_name", "plan_name", "parent_org", "contract_date"
+    ], dtype={
+        "contractid": str,
+        "planid": float,
+        "org_type": str,
+        "plan_type": str,
+        "partd": str,
+        "snp": str,
+        "eghp": str,
+        "org_name": str,
+        "org_marketing_name": str,
+        "plan_name": str,
+        "parent_org": str,
+        "contract_date": str
+    })
+
+
+enrollmentData = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/input/CPSC_Enrollment_Info_2015_01.csv", skiprows=1, names=[
+        "contractid", "planid", "ssa", "fips", "state", "county", "enrollment"
+    ], dtype={
+        "contractid": str,
+        "planid": float,
+        "ssa": float,
+        "fips": float,
+        "state": str,
+        "county": str,
+        "enrollment": float
+    }, na_values="*")
+
+contractData['idCount'] = contractData.groupby(['contractid', 'planid']).cumcount() + 1
+contractData = contractData[contractData["idCount"] == 1].drop(columns=['idCount'])
+
+# merge:
+mergedData = contractData.merge(enrollmentData, on=["contractid", "planid"], how="left")
+mergedData['year'] = 2015
+
+# do more cleaning with FIPS codes, etc.
+mergedData['fips'] = mergedData.groupby(['state', 'county',])['fips'].ffill().bfill()
+
+for char in ['plan_type', 'partd', 'snp', 'eghp', 'plan_name']:
+    mergedData[char] = mergedData.groupby(['contractid', 'planid'])[char].ffill().bfill()
+
+for char in ['org_type', 'org_name', 'org_marketing_name', 'parent_org']:
+    mergedData[char] = mergedData.groupby(['contractid'])[char].ffill().bfill()
+
+mergedData.rename(columns={"enrollment": "avg_enrollment"}, inplace=True)
+
+compMergedData = pd.DataFrame()
+compMergedData = pd.concat([compMergedData, mergedData], ignore_index=True)
+# Line below is commented out so new data is not being repeatedly generated.
+#compMergedData.to_csv("data/output/compTotalData.csv")
+```
+
+\newpage
+
+# Building the data:
+
+The data was cleaned and processed so that the following tables could be computed and displayed. 
+
+#### 1.
+##### Plan Count by Type:
+
+```{python}
+# import the dataset that we created
+compTotalData = pd.read_csv("/Users/baranpasa/Library/Mobile Documents/com~apple~CloudDocs/Desktop/Emory/Junior Year/Junior Spring/ECON 470/ECON 470 Python /homework1/homework1/data/output/compTotalData.csv")
+
+#create the tables:
+
+typePlans = compTotalData.pivot_table(index='plan_type', columns='year', values='planid', aggfunc='count').style.set_caption('Plan Count for 2015')
+typePlans
+
+
+```
+\newpage
+#### 2.
+The data was then further cleaned, removing all special needs plans, employer group plans, and all "800 series" plans.
+
+##### Updated Plan Count by Type:
+```{python}
+compTotalDataFin = compTotalData[(compTotalData['snp'] == "No") & (compTotalData['eghp'] == "No") & ((compTotalData['planid'] < 800) | (compTotalData['planid'] >= 900))]
+typePlans = compTotalDataFin.pivot_table(index='plan_type', columns='year', values='avg_enrollment', aggfunc='count').style.set_caption('Updated Plan Count by Type for 2015')
+typePlans
+```
+
+#### 3.
+##### Average Enrollments by Type in 2015:
+```{python}
+enrollmentType = compTotalDataFin.pivot_table(index='plan_type', columns='year', values='avg_enrollment', aggfunc='mean').style.set_caption('Enrollment Average by Plan Type for 2015')
+enrollmentType
+```
